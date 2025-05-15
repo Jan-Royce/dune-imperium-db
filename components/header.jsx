@@ -1,4 +1,5 @@
-import Link from 'next/link';
+'use client';
+import { useState } from 'react';
 
 const filterSections = [
     {
@@ -12,7 +13,8 @@ const filterSections = [
             { value: 'bloodlines', img: '', alt: 'bloodlines' },
             { value: 'promo', img: '', alt: 'promo' }
         ],
-        default: 'base'
+        default: 'base',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Component',
@@ -24,9 +26,11 @@ const filterSections = [
             { value: 'conflict', img: '', alt: 'conflict' },
             { value: 'tech', img: '', alt: 'tech' },
             { value: 'contract', img: '', alt: 'contract' },
-            { value: 'commander_skill', img: '', alt: 'commander_skill' }
+            { value: 'commanderSkill', img: '', alt: 'commander_skill' },
+            { value: 'navigation', img: '', alt: 'navigation' } //Steersman Y'rkoon
         ],
-        default: ''
+        default: 'card',
+        control: 'radio'
     },
     {
         sectionTitle: 'Factions',
@@ -38,7 +42,8 @@ const filterSections = [
             { value: 'fremen', img: '', alt: 'FR' },
             { value: 'none', img: '', alt: 'NA' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Agent Icons',
@@ -51,9 +56,11 @@ const filterSections = [
             { value: 'green', img: '', alt: 'G' },
             { value: 'blue', img: '', alt: 'B' },
             { value: 'yellow', img: '', alt: 'Y' },
+            { value: 'spy', img: '', alt: 'spy' },
             { value: 'none', img: '', alt: 'NA' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Reveal (Persuasion)',
@@ -65,7 +72,8 @@ const filterSections = [
             { value: 3, img: '', alt: '3' },
             { value: 4, img: '', alt: '4' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Reveal (Sword)',
@@ -79,13 +87,13 @@ const filterSections = [
             { value: 5, img: '', alt: '5' },
             { value: 6, img: '', alt: '6' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Cost',
         sectionId: 'cost',
         items: [
-            { value: 0, img: '', alt: '0' },
             { value: 1, img: '', alt: '1' },
             { value: 2, img: '', alt: '2' },
             { value: 3, img: '', alt: '3' },
@@ -96,7 +104,8 @@ const filterSections = [
             { value: 8, img: '', alt: '8' },
             { value: 9, img: '', alt: '9' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Misc',
@@ -106,7 +115,8 @@ const filterSections = [
             { value: 'infiltrate', img: '', alt: 'infiltrate' },
             { value: 'graft', img: '', alt: 'graft' }
         ],
-        default: ''
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Card Type',
@@ -121,7 +131,7 @@ const filterSections = [
             { value: 'plot', img: '', alt: 'plot' },
             { value: 'combat', img: '', alt: 'combat' },
             { value: 'endgame', img: '', alt: 'endgame' },
-            { value: 'twisted', img: '', alt: 'twisted' }
+            { value: 'twisted', img: '', alt: 'twisted' } //Piter De Vries
         ],
         leaderItems: [
             { value: 1, img: '', alt: '1' },
@@ -134,7 +144,12 @@ const filterSections = [
             { value: 2, img: '', alt: '2' },
             { value: 3, img: '', alt: '3' }
         ],
-        default: 'imperium'
+        techItems: [],
+        contractItems: [],
+        commanderSkillItems: [],
+        navigationItems: [],
+        default: '',
+        control: 'checkbox'
     },
     {
         sectionTitle: 'Sort',
@@ -145,24 +160,44 @@ const filterSections = [
             { value: 'sword', img: '', alt: 'sword' },
             { value: 'cost', img: '', alt: 'cost' }
         ],
-        default: ''
+        default: 'name',
+        control: 'radio'
     },
 ];
 
-var cardType = 'card'; //update to be dynamic based on component
-
 export function Header() {
+    //TODO : filter by display by expansions selected (?)
+    const [ cardType, setCardType ] = useState('card');
+    
+    function changeFilter(e) {
+        if(e.target.name == 'component') {
+            setCardType(e.target.value);
+        }
+    }
+    
     return (
         <nav className="flex flex-wrap items-center gap-4 pt-6 pb-12 sm:pt-12 md:pb-24">
             <input type="text" id="search" autoComplete="off" className="w-full border-2 p-1 outline-none" placeholder="Search card name, agent box or reveal text"></input>
             {!!filterSections?.length && (
-                <ul className="flex flex-wrap gap-x-4 gap-y-1">
-                    {filterSections.map((filterSection, i) => (
-                        <li key={i}>
-                            {filterSection.sectionTitle}
+                <ul className="flex flex-wrap gap-y-2">
+                    {filterSections.filter(filterSection => filterSection[filterSection.sectionId == 'card_type' ? `${cardType}Items` : `items`].length > 0).map((filterSection, i) => (
+                        <li key={i} className="basis-1/2 outline px-2 py-1">
+                            <span className="font-bold">{filterSection.sectionTitle}</span>
                             <ul className="flex flex-wrap gap-x-4 gap-y-1">
                                 {filterSection[filterSection.sectionId == 'card_type' ? `${cardType}Items` : `items`].map((item, j) => (
-                                    <li key={j}>{item.value}</li>
+                                    <li key={j}>
+                                        <label>
+                                            <input 
+                                                type={filterSection.control} 
+                                                name={filterSection.sectionId} 
+                                                value={item.value}
+                                                defaultChecked={filterSection.default === item.value} 
+                                                autoComplete='off'
+                                                onChange={ changeFilter }
+                                            />
+                                            {item.value}
+                                        </label>
+                                    </li>
                                 ))}
                                 {filterSection.sectionId == 'sort' && (
                                     <span>ASC DESC</span>
